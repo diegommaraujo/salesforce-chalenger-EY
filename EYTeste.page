@@ -1,0 +1,174 @@
+<apex:page controller="EYTesteController">
+    <apex:includeLightning />
+
+    <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" />
+    <apex:form >
+        <apex:inputHidden id="idLead"></apex:inputHidden>
+        <apex:commandButton id="getDados" value="Autenticar Na Org" action="{!getDadosConexao}"></apex:commandButton>
+        <apex:commandButton id="lerLead" value="Ler os Leads" reRender="accountList"></apex:commandButton>
+        <apex:commandButton id="criaLead" value="Criar Novo Lead" reRender="accountList"></apex:commandButton>
+        <apex:commandButton id="updateLead" value="Converter Ernst & Young" reRender="accountList"></apex:commandButton>
+        <div id="accountList"></div>
+        <br />
+        <div id="cepList"></div>
+
+        <apex:pageBlock >
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Atualizar Contato" action="{!setAtualizarContato}" rerender="tableCtt"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockTable value="{!DadosConta}" var="d" id="tableAcc">
+                <apex:column value="{!d.Id}" />
+                <apex:column value="{!d.Name}" />
+                <apex:column value="{!d.Owner.Name}" />
+                <apex:column value="{!d.Phone}" />
+            </apex:pageBlockTable>
+            <apex:pageBlockTable value="{!Conta.Contacts}" var="c" id="tableCtt">
+                <apex:column value="{!c.Id}" />
+                <apex:column value="{!c.Name}" />
+                <apex:column value="{!c.Owner.Name}" />
+                <apex:column value="{!c.Phone}" />
+                <apex:column value="{!c.Title}" />
+                <apex:column value="{!c.Email}" />
+            </apex:pageBlockTable>
+            <apex:pageBlockTable value="{!Conta.Opportunities}" var="o" id="tableOpp">
+                <apex:column value="{!o.Id}" />
+                <apex:column value="{!o.Name}" />
+                <apex:column value="{!o.Owner.Name}" />
+                <apex:column value="{!o.LeadSource}" />
+            </apex:pageBlockTable>
+            <apex:inputHidden value="{!Contato.Id}" />
+            <apex:outputLabel >Nome</apex:outputLabel>
+            <apex:inputField label="Nome" value="{!Contato.FirstName}" /><br />
+            <apex:outputLabel >Sobrenome</apex:outputLabel>
+            <apex:inputField label="Sobrenome" value="{!Contato.LastName}" /><br />
+            <apex:outputLabel >Cargo</apex:outputLabel>
+            <apex:inputField label="Cargo" value="{!Contato.Title}" /> <br />
+            <apex:outputLabel >Telefone</apex:outputLabel>
+            <apex:inputField label="Telefone" value="{!Contato.Phone}" /><br />
+            <apex:outputLabel >E-mail</apex:outputLabel>
+            <apex:inputField label="E-mail" value="{!Contato.Email}" /><br />
+    </apex:pageBlock>
+    <apex:pageBlock>
+        <apex:pageBlockTable value="{!DadosConta}" var="e" id="tableEnd" columns="2">
+
+                <apex:column value="{!e.BillingStreet}" />
+                <apex:column value="{!e.BillingCity}" />
+                <apex:column value="{!e.BillingState}" />
+                <apex:column value="{!e.BillingPostalCode}" />
+                <apex:column value="{!e.BillingCountry}" />
+
+                <apex:column value="{!e.ShippingStreet}" />
+                <apex:column value="{!e.ShippingCity}" />
+                <apex:column value="{!e.ShippingState}" />
+                <apex:column value="{!e.ShippingPostalCode}" />
+                <apex:column value="{!e.ShippingCountry}" />
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+    </apex:form>
+
+    <script>
+        j$ = jQuery.noConflict();  
+        j$('input[id$=lerLead]').off().on('click', function(){
+            j$.ajax('https://fhmtec-dev-ed.my.salesforce.com/services/data/v48.0/query?q=SELECT+Id,+Name+FROM+Lead',{
+                beforeSend: function(xhr) {
+                    // Set the OAuth header from the session ID
+                    xhr.setRequestHeader('Authorization', 'Bearer {!accessToken}');
+                },
+                success: function(response) {
+                    // We got 'em - append our records to the HTML list
+                    j$('#accountList').empty();
+                    j$.each(response.records, function(index, record) {
+                        j$('input[id$=idLead').val(record.Id);
+                        j$('#accountList').append('<li>'+record.Name+'</li>');
+                    });
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    // Oops - what went wrong?
+                    alert(jqXHR.status + ': ' + errorThrown);
+                }
+            });
+
+        });
+
+        j$('input[id$=criaLead]').off().on('click', function(){
+            
+            // alert('teste');
+            var lead = {
+            'FirstName': 'Ernst & Young',
+            'LastName': 'Consultoria',
+            'Phone': '(11) 2573-3000',
+            'MobilePhone': '(11) 9573-3000',
+            'Company': 'EY Brasil',
+            'Title': 'Presidente',
+            'Email': 'ey@br.ey.com',
+            'LeadSource': 'Web',
+            'Status': 'Open - Not Contacted',
+            'Street': 'Av. Chedid Jafet',
+            'State': 'São Paulo',
+            'PostalCode': '03178-200',
+            'Country': 'Brasil'
+
+
+            }
+            // alert(lead);
+            var payload = JSON.stringify(lead);
+
+
+            j$.ajax('https://fhmtec-dev-ed.my.salesforce.com/services/data/v48.0/sobjects/lead',{
+                beforeSend: function(xhr) {
+                    // Set the OAuth header from the session ID
+                    xhr.setRequestHeader('Authorization', 'Bearer {!accessToken}');
+                },
+                success: function(result) {
+                    // We got 'em - append our records to the HTML list
+                    j$('#accountList').empty();
+                    j$('input[id$=idLead]').val(result.id);
+                    
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    // Oops - what went wrong?
+                    alert(jqXHR.status + ': ' + errorThrown);
+                },
+                data: payload,
+                dataType: 'json',
+                type: 'POST',
+                contentType: 'application/json'
+            });
+
+        });        
+
+        j$('input[id$=updateLead]').off().on('click', function(){
+            
+            // alert('teste');
+            var lead = {
+            'Status': 'Closed - Converted'
+            }
+            // alert(lead);
+            var payload = JSON.stringify(lead);
+            var leadId = j$('input[id$=idLead]').val();
+            console.log(leadId);
+
+            j$.ajax('https://fhmtec-dev-ed.my.salesforce.com/services/data/v48.0/sobjects/lead/'+leadId,{
+                beforeSend: function(xhr) {
+                    // Set the OAuth header from the session ID
+                    xhr.setRequestHeader('Authorization', 'Bearer {!accessToken}');
+                },
+                success: function(result) {
+                    // We got 'em - append our records to the HTML list
+                    j$('#accountList').empty();
+                    
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    // Oops - what went wrong?
+                    alert(jqXHR.status + ': ' + errorThrown);
+                },
+                data: payload,
+                dataType: 'json',
+                type: 'PATCH',
+                contentType: 'application/json'
+            });
+
+        });        
+
+    </script>
+</apex:page>

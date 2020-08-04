@@ -1,0 +1,16 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId,forceCommunity:availableForAllPageTypes,forceCommunity:searchInterface" controller="ConsultaCEP_ctl">
+    <aura:attribute name="searchText" type="String" default=""/>
+    <aura:attribute name="cepResultado" type="String" default=""/>
+    <aura:attribute name="cepIds" type="String" default=""/>
+    <div class="slds-form-element slds-lookup" data-select="single">
+        <div class="slds-form-element__control">
+            <div class="slds-input-has-icon slds-input-has-icon--right">
+                <ui:outputText value="Digite aqui o CEP"></ui:outputText>
+                <lightning:buttonIcon iconName="utility:search" variant="bare" onclick="{! c.handleClick }" alternativeText="Search" class="slds-input__icon" />
+                <ui:inputText value="{!v.searchText}" class="slds-input" placeholder="Search" />
+            </div>
+            <pre>{!v.cepResultado}</pre>
+            <lightning:buttonIcon iconName="utility:save" variant="bare" onclick="{! c.handleClick2 }" alternativeText="Salvar Endereço" class="slds-input__icon" />
+        </div>
+    </div>
+</aura:component>
